@@ -1,6 +1,6 @@
 """
 Auth blueprint — replaces the client-side hardcoded login in the
-ZionBoutique mockup with real server-side authentication.
+Bethel Boutique mockup with real server-side authentication.
 
 Wire it into your existing Flask app with:
 
