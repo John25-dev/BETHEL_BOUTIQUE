@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZionBoutique – Business Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:'#faf5ff',100:'#f3e8ff',200:'#e9d5ff',300:'#d8b4fe',
+              400:'#c084fc',500:'#a855f7',600:'#9333ea',700:'#7e22ce',800:'#6b21a8'
+            }
+          },
+          fontFamily: { sans:['Inter','sans-serif'], serif:['Playfair Display','serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: Inter, sans-serif; }
+    .nav-active { background:#f3e8ff; color:#7e22ce; border-right:3px solid #a855f7; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body class="bg-brand-50 text-gray-800">
+
+  <!-- LOGIN -->
+  <div id="login-page" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-8">
+        <h1 class="font-serif text-4xl text-brand-700">ZionBoutique</h1>
+        <p class="text-gray-500 mt-1">Business Manager</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-xl border border-brand-100 p-8">
+        <h2 class="text-xl font-semibold text-center mb-6">Sign in</h2>
+        {% if oauth_error %}
+        <div class="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg">
+          {% if oauth_error == 'not_authorized' %}
+            This Google account is not authorized as staff. Contact an admin.
+          {% else %}
+            Google sign-in failed. Try again.
+          {% endif %}
+        </div>
+        {% endif %}
+        <div id="login-error" class="hidden mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg"></div>
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Email</label>
+            <input type="email" id="email" required class="w-full px-4 py-2.5 border border-brand-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-400 outline-none" placeholder="you@store.com">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Password</label>
+            <input type="password" id="password" required class="w-full px-4 py-2.5 border border-brand-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-400 outline-none">
+          </div>
+          <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg font-medium">Sign In</button>
+        </form>
+        <div class="mt-6 pt-6 border-t border-brand-100 space-y-2">
+          <a href="/auth/google/login/staff" class="flex items-center justify-center gap-2 w-full border border-gray-200 hover:bg-gray-50 py-2.5 rounded-lg text-sm font-medium">
+            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Staff / Admin – Google
+          </a>
+          <a href="/auth/google/login/customer" class="flex items-center justify-center gap-2 w-full border border-gray-200 hover:bg-gray-50 py-2.5 rounded-lg text-sm font-medium text-gray-600">
+            Customer – Continue with Google
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden flex h-screen overflow-hidden">
+    <aside class="w-64 bg-white border-r border-brand-100 flex flex-col">
+      <div class="p-6 border-b border-brand-100">
+        <h1 class="font-serif text-2xl text-brand-700">ZionBoutique</h1>
+        <p class="text-xs text-gray-400">Business Manager</p>
+      </div>
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <a href="#" data-section="dashboard" class="nav-link nav-active flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-brand-50">Dashboard</a>
+        <a href="#" data-section="products" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-brand-50">Products</a>
+        <a href="#" data-section="sales" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-brand-50">Point of Sale</a>
+        <a href="#" data-section="customers" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-brand-50">Customers</a>
+        <a href="#" data-section="orders" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-brand-50">Orders</a>
+        <div id="admin-nav" class="hidden space-y-1 pt-2">
+          <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase">Admin</div>
+          <a href="#" data-section="reports" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-brand-50">Reports</a>
+          <a href="#" data-section="staff" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-brand-50">Staff</a>
+        </div>
+      </nav>
+      <div class="p-4 border-t border-brand-100">
+        <p id="user-name" class="text-sm font-medium truncate">User</p>
+        <p id="user-role" class="text-xs text-gray-400">Role</p>
+        <button id="btn-logout" class="mt-2 text-sm text-red-600 hover:underline">Sign out</button>
+      </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto">
+      <header class="bg-white border-b border-brand-100 px-8 py-4 sticky top-0 z-10">
+        <h2 id="page-title" class="text-xl font-semibold">Dashboard</h2>
+      </header>
+      <div class="p-8">
+        <section id="section-dashboard" class="section">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 border border-brand-100">
+              <p class="text-sm text-gray-500">Total Sales</p>
+              <p id="stat-sales" class="text-2xl font-semibold mt-1">—</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 border border-brand-100">
+              <p class="text-sm text-gray-500">Orders</p>
+              <p id="stat-orders" class="text-2xl font-semibold mt-1">—</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 border border-brand-100">
+              <p class="text-sm text-gray-500">Low Stock</p>
+              <p id="stat-lowstock" class="text-2xl font-semibold mt-1 text-amber-600">—</p>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-brand-100 p-6">
+            <h3 class="font-medium mb-4">Recent Orders</h3>
+            <div id="recent-orders" class="text-sm text-gray-500">Loading…</div>
+          </div>
+        </section>
+
+        <section id="section-products" class="section hidden">
+          <div class="flex justify-between mb-4">
+            <h3 class="font-medium">Products</h3>
+            <button id="btn-add-product" class="hidden bg-brand-600 text-white px-4 py-2 rounded-lg text-sm">+ Add</button>
+          </div>
+          <div class="bg-white rounded-xl border border-brand-100 overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-brand-50 text-left text-gray-500">
+                <tr><th class="px-4 py-3">Name</th><th class="px-4 py-3">SKU</th><th class="px-4 py-3">Price</th><th class="px-4 py-3">Stock</th><th class="px-4 py-3">Status</th></tr>
+              </thead>
+              <tbody id="products-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="section-sales" class="section hidden">
+          <div class="grid lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white rounded-xl border border-brand-100 p-6">
+              <h3 class="font-medium mb-4">Products</h3>
+              <div id="pos-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+            </div>
+            <div class="bg-white rounded-xl border border-brand-100 p-6">
+              <h3 class="font-medium mb-4">Cart</h3>
+              <div id="cart-items" class="space-y-2 mb-4 text-sm max-h-48 overflow-y-auto"></div>
+              <div class="border-t pt-3 text-sm space-y-1">
+                <div class="flex justify-between"><span>Subtotal</span><span id="cart-sub">0</span></div>
+                <div class="flex justify-between"><span>Tax</span><span id="cart-tax">0</span></div>
+                <div class="flex justify-between font-semibold text-lg"><span>Total</span><span id="cart-total">0</span></div>
+              </div>
+              <button id="btn-checkout" class="w-full mt-4 bg-brand-600 text-white py-3 rounded-lg font-medium">Complete Sale</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-customers" class="section hidden">
+          <div class="bg-white rounded-xl border border-brand-100 overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-brand-50 text-left text-gray-500">
+                <tr><th class="px-4 py-3">Name</th><th class="px-4 py-3">Phone</th><th class="px-4 py-3">Email</th><th class="px-4 py-3">Total Spent</th></tr>
+              </thead>
+              <tbody id="customers-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="section-orders" class="section hidden">
+          <div class="bg-white rounded-xl border border-brand-100 overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-brand-50 text-left text-gray-500">
+                <tr><th class="px-4 py-3">ID</th><th class="px-4 py-3">Date</th><th class="px-4 py-3">Total</th><th class="px-4 py-3">Status</th></tr>
+              </thead>
+              <tbody id="orders-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="section-reports" class="section hidden">
+          <div class="grid md:grid-cols-4 gap-4">
+            <div class="bg-white rounded-xl p-6 border border-brand-100 text-center">
+              <p id="rep-sales" class="text-2xl font-semibold">—</p>
+              <p class="text-xs text-gray-400">Total Sales</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 border border-brand-100 text-center">
+              <p id="rep-orders" class="text-2xl font-semibold">—</p>
+              <p class="text-xs text-gray-400">Orders</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 border border-brand-100 text-center">
+              <p id="rep-avg" class="text-2xl font-semibold">—</p>
+              <p class="text-xs text-gray-400">Avg Order</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 border border-brand-100 text-center">
+              <p id="rep-low" class="text-2xl font-semibold">—</p>
+              <p class="text-xs text-gray-400">Low Stock</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-staff" class="section hidden">
+          <div class="bg-white rounded-xl border border-brand-100 overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-brand-50 text-left text-gray-500">
+                <tr><th class="px-4 py-3">Name</th><th class="px-4 py-3">Email</th><th class="px-4 py-3">Role</th></tr>
+              </thead>
+              <tbody id="staff-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const TAX_RATE = {{ tax_rate }};
+    let user = null;
+    let cart = [];
+    let productsCache = [];
+
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, {
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+        ...opts,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      return data;
+    }
+
+    function money(n) {
+      return 'KES ' + Number(n || 0).toLocaleString('en-KE', { maximumFractionDigits: 0 });
+    }
+
+    // Auth
+    $('#login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = $('#login-error');
+      err.classList.add('hidden');
+      try {
+        user = await api('/login', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: $('#email').value.trim(),
+            password: $('#password').value,
+          }),
+        });
+        showApp();
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('hidden');
+      }
+    });
+
+    $('#btn-logout').addEventListener('click', async () => {
+      await api('/logout', { method: 'POST' });
+      location.reload();
+    });
+
+    async function checkSession() {
+      try {
+        const me = await api('/api/me');
+        if (me.authenticated && me.type === 'staff') {
+          user = { id: me.id, name: me.name, role: me.role };
+          showApp();
+        }
+      } catch (_) {}
+    }
+
+    function showApp() {
+      $('#login-page').classList.add('hidden');
+      $('#app').classList.remove('hidden');
+      $('#user-name').textContent = user.name;
+      $('#user-role').textContent = user.role === 'admin' ? 'Administrator' : 'Staff';
+      $('#admin-nav').classList.toggle('hidden', user.role !== 'admin');
+      showSection('dashboard');
+    }
+
+    // Nav
+    $$('.nav-link').forEach((a) => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection(a.dataset.section);
+      });
+    });
+
+    async function showSection(id) {
+      $$('.section').forEach((s) => s.classList.add('hidden'));
+      $(`#section-${id}`)?.classList.remove('hidden');
+      $$('.nav-link').forEach((a) => a.classList.toggle('nav-active', a.dataset.section === id));
+      $('#page-title').textContent = {
+        dashboard: 'Dashboard', products: 'Products', sales: 'Point of Sale',
+        customers: 'Customers', orders: 'Orders', reports: 'Reports', staff: 'Staff',
+      }[id] || id;
+
+      if (id === 'dashboard') loadDashboard();
+      if (id === 'products') loadProducts();
+      if (id === 'sales') loadPOS();
+      if (id === 'customers') loadCustomers();
+      if (id === 'orders') loadOrders();
+      if (id === 'reports') loadReports();
+      if (id === 'staff') loadStaff();
+    }
+
+    async function loadDashboard() {
+      try {
+        const [orders, products] = await Promise.all([
+          api('/api/orders'),
+          api('/api/products'),
+        ]);
+        const completed = orders.filter((o) => o.status === 'Completed');
+        const sales = completed.reduce((s, o) => s + Number(o.total || 0), 0);
+        $('#stat-sales').textContent = money(sales);
+        $('#stat-orders').textContent = completed.length;
+        $('#stat-lowstock').textContent = products.filter((p) => Number(p.stock_qty) < 5).length;
+        $('#recent-orders').innerHTML = orders.slice(0, 8).map((o) =>
+          `<div class="flex justify-between py-2 border-b border-brand-50">
+            <span>#${o.id}</span><span>${money(o.total)}</span><span class="text-gray-400">${(o.created_at || '').slice(0, 10)}</span>
+          </div>`
+        ).join('') || 'No orders yet';
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadProducts() {
+      const products = await api('/api/products');
+      productsCache = products;
+      $('#products-body').innerHTML = products.map((p) => `
+        <tr class="border-t border-brand-50">
+          <td class="px-4 py-3 font-medium">${p.name}</td>
+          <td class="px-4 py-3 text-gray-500">${p.sku}</td>
+          <td class="px-4 py-3">${money(p.price)}</td>
+          <td class="px-4 py-3">${p.stock_qty}</td>
+          <td class="px-4 py-3">${p.status || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadPOS() {
+      productsCache = await api('/api/products');
+      $('#pos-grid').innerHTML = productsCache.filter((p) => Number(p.stock_qty) > 0).map((p) => `
+        <button onclick="addToCart(${p.id})" class="border border-brand-100 rounded-xl p-4 text-left hover:border-brand-400 hover:bg-brand-50">
+          <p class="font-medium text-sm">${p.name}</p>
+          <p class="text-xs text-gray-500">${money(p.price)} · ${p.stock_qty} left</p>
+        </button>
+      `).join('');
+      renderCart();
+    }
+
+    function addToCart(id) {
+      const p = productsCache.find((x) => Number(x.id) === Number(id));
+      if (!p) return;
+      const line = cart.find((c) => c.product_id === id);
+      if (line) line.qty += 1;
+      else cart.push({ product_id: id, name: p.name, price: Number(p.price), qty: 1 });
+      renderCart();
+    }
+
+    function renderCart() {
+      const sub = cart.reduce((s, c) => s + c.price * c.qty, 0);
+      const tax = Math.round(sub * TAX_RATE * 100) / 100;
+      $('#cart-items').innerHTML = cart.length
+        ? cart.map((c, i) => `
+          <div class="flex justify-between">
+            <span>${c.name} × ${c.qty}
+              <button class="text-red-500 ml-1" onclick="cart[${i}].qty--; if(cart[${i}].qty<=0) cart.splice(${i},1); renderCart()">−</button>
+            </span>
+            <span>${money(c.price * c.qty)}</span>
+          </div>`).join('')
+        : '<p class="text-gray-400">Cart empty</p>';
+      $('#cart-sub').textContent = money(sub);
+      $('#cart-tax').textContent = money(tax);
+      $('#cart-total').textContent = money(sub + tax);
+    }
+
+    $('#btn-checkout').addEventListener('click', async () => {
+      if (!cart.length) return alert('Cart is empty');
+      try {
+        const order = await api('/api/orders', {
+          method: 'POST',
+          body: JSON.stringify({
+            items: cart.map((c) => ({ product_id: c.product_id, qty: c.qty })),
+          }),
+        });
+        alert(`Sale complete! Order #${order.id} — ${money(order.total)}`);
+        cart = [];
+        renderCart();
+        loadPOS();
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+
+    async function loadCustomers() {
+      const list = await api('/api/customers');
+      $('#customers-body').innerHTML = list.map((c) => `
+        <tr class="border-t border-brand-50">
+          <td class="px-4 py-3 font-medium">${c.name}</td>
+          <td class="px-4 py-3">${c.phone || '—'}</td>
+          <td class="px-4 py-3">${c.email || '—'}</td>
+          <td class="px-4 py-3">${money(c.total_spent)}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadOrders() {
+      const list = await api('/api/orders');
+      $('#orders-body').innerHTML = list.map((o) => `
+        <tr class="border-t border-brand-50">
+          <td class="px-4 py-3 font-medium">#${o.id}</td>
+          <td class="px-4 py-3">${(o.created_at || '').slice(0, 10)}</td>
+          <td class="px-4 py-3">${money(o.total)}</td>
+          <td class="px-4 py-3">${o.status}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadReports() {
+      const r = await api('/api/reports/summary');
+      $('#rep-sales').textContent = money(r.total_sales);
+      $('#rep-orders').textContent = r.order_count;
+      $('#rep-avg').textContent = money(r.avg_order_value);
+      $('#rep-low').textContent = r.low_stock_count;
+    }
+
+    async function loadStaff() {
+      const list = await api('/api/staff');
+      $('#staff-body').innerHTML = list.map((u) => `
+        <tr class="border-t border-brand-50">
+          <td class="px-4 py-3 font-medium">${u.name}</td>
+          <td class="px-4 py-3">${u.email}</td>
+          <td class="px-4 py-3 capitalize">${u.role}</td>
+        </tr>
+      `).join('');
+    }
+
+    checkSession();
+  </script>
+</body>
+</html>
