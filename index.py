@@ -11,24 +11,18 @@ app.template_folder = str(ROOT / "templates")
 app.root_path = str(ROOT)
 
 
-class StripVercelPrefix:
-    """
-    Vercel sends PATH_INFO like /api/index/login for a browser request to /login.
-    Strip the /api/index prefix so Flask routes match.
-    """
-
-    PREFIX = "/api/index"
-
-    def __init__(self, wsgi_app):
-        self.wsgi_app = wsgi_app
-
-    def __call__(self, environ, start_response):
-        path = environ.get("PATH_INFO") or ""
-        if path == self.PREFIX or path == self.PREFIX + "/":
-            environ["PATH_INFO"] = "/"
-        elif path.startswith(self.PREFIX + "/"):
-            environ["PATH_INFO"] = path[len(self.PREFIX):] or "/"
-        return self.wsgi_app(environ, start_response)
-
-
-app.wsgi_app = StripVercelPrefix(app.wsgi_app)
+@app.route("/", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+@app.route("/api/index", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+@app.route("/api/index/", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+@app.route("/api/index/<path:subpath>", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+def debug_path(subpath=None):
+    from flask import request
+    return {
+        "request.path": request.path,
+        "request.url": request.url,
+        "request.full_path": request.full_path,
+        "subpath": subpath,
+        "args": dict(request.args),
+        "method": request.method,
+        "headers": {k: v for k, v in request.headers.items()},
+    }
