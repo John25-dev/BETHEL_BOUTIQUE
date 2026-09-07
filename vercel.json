@@ -4,3 +4,8 @@
     { "source": "/(.*)", "destination": "/api/index" }
   ]
 }
+
+@app.before_request
+def _debug_path():
+    from flask import request
+    print("PATH:", request.path, "URL:", request.url)
